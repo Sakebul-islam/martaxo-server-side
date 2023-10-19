@@ -23,6 +23,7 @@ async function run() {
   try {
     await client.connect();
     const brandsCollection = client.db('brandsDB').collection('brands');
+    const productsCollection = client.db('brandsDB').collection('products');
 
     app.get('/brands', async (req, res) => {
       const cursor = brandsCollection.find();
@@ -31,8 +32,14 @@ async function run() {
     });
     app.post('/brands', async (req, res) => {
       const brand = req.body;
-      console.log(brand);
       const result = await brandsCollection.insertOne(brand);
+      res.send(result);
+    });
+
+    // Add Product
+    app.post('/products', async (req, res) => {
+      const products = req.body;
+      const result = await productsCollection.insertOne(products);
       res.send(result);
     });
 
