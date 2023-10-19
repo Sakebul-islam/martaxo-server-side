@@ -36,6 +36,13 @@ async function run() {
       res.send(result);
     });
 
+    app.get('/brands/:name', async (req, res) => {
+      const brand = req.params.name;
+      const query = { brandName: brand };
+      const result = await brandsCollection.findOne(query);
+      res.send(result);
+    });
+
     // Add Product
     app.post('/products', async (req, res) => {
       const products = req.body;
