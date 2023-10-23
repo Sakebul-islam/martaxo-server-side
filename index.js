@@ -95,7 +95,53 @@ async function run() {
     // Cart Section
     app.post('/cart', async (req, res) => {
       const cartData = req.body;
-      const result = await cartCollection.insertOne(cartData);
+      const existingCartItem = await cartCollection.findOne({
+        itemName: cartData.itemName,
+        userEmail: cartData.userEmail,
+      });
+
+      if (existingCartItem) {
+        const updatedQuantity = existingCartItem.quantity + 1;
+        const result = await cartCollection.updateOne(
+          { _id: existingCartItem._id },
+          { $set: { quantity: updatedQuantity } }
+        );
+        res.send(result);
+      } else {
+        const result = await cartCollection.insertOne(cartData);
+        res.send(result);
+      }
+    });
+
+    app.put('/cart/:id', async (req, res) => {
+      const itemId = req.params.id;
+      const { quantity } = req.body;
+
+      const updatedItem = await cartCollection.findOneAndUpdate(
+        { _id: new ObjectId(itemId) },
+        { $set: { quantity: quantity } },
+        { returnOriginal: false }
+      );
+
+      if (updatedItem.value) {
+        res.json(updatedItem.value);
+      } else {
+        res.status(404).json({ error: 'Item not found' });
+      }
+    });
+
+    app.delete('/cart/delete/:id', async (req, res) => {
+      const itemId = req.params.id;
+      const result = await cartCollection.deleteOne({
+        _id: new ObjectId(itemId),
+      });
+      res.send(result);
+    });
+
+    app.get('/cart/:email', async (req, res) => {
+      const userMail = req.params.email;
+      const query = { userEmail: userMail };
+      const result = await cartCollection.find(query).toArray();
       res.send(result);
     });
 
